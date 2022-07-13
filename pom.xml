@@ -24,7 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <author>KHunady</author>
     <mainClass>me.kylehunady.VillagerEssentials</mainClass>
-    <description>Edits to villagers and zomibes to make villager trading simpler in multiplayer Minecraft</description>
+    <description>Edits to villagers and zombies to make villager trading simpler in multiplayer Minecraft</description>
   </properties>
 
   <build>

@@ -1,11 +1,16 @@
 package me.kylehunady;
 
 import java.util.Arrays;
+import java.util.Random;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
+import org.bukkit.entity.ZombieVillager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 
 import io.github.bananapuncher714.nbteditor.NBTEditor;
@@ -16,14 +21,13 @@ public class GossipHandler implements Listener {
     @EventHandler
     public void onPlayerInteractAtEntity(PlayerInteractAtEntityEvent event) {
 
-        // check if player is right clicking a villager
-        if (!(event.getRightClicked() instanceof Villager))
+        // check if player is right clicking a villager or zombie villager
+        Entity entity = event.getRightClicked();
+        if (!(entity instanceof Villager || entity instanceof ZombieVillager))
             return;
 
-        Villager villagerEnt = (Villager) event.getRightClicked();
-
         // check if the villager has a Gossips property to parse
-        if (!(NBTEditor.contains(villagerEnt, "Gossips", 0)))
+        if (!(NBTEditor.contains(entity, "Gossips", 0)))
             return;
 
         // the following native MC command (cheats enabled) will grab the Gossips data
@@ -43,7 +47,7 @@ public class GossipHandler implements Listener {
 
         // Note: Gossips property is a list. Each element is a compound tag containing
         // Target, Type, and Value
-        NBTCompound gossips = NBTEditor.getNBTCompound(villagerEnt, "Gossips");
+        NBTCompound gossips = NBTEditor.getNBTCompound(entity, "Gossips");
         int size = NBTEditor.getSize(gossips);
 
         Player player = event.getPlayer();
@@ -51,8 +55,7 @@ public class GossipHandler implements Listener {
 
         int maxValue = 0;
         // index is needed to change the player's existing entry in Gossips property
-        // if no entry is found, index defaults to 0, which will add new entry
-        int playerIndex = 0;
+        int playerIndex = -1;
 
         String[] gossipTypes = { "minor_positive", "major_positive" };
         for (String type : gossipTypes) {
@@ -69,18 +72,23 @@ public class GossipHandler implements Listener {
 
             }
             if (maxValue <= 0)
-                return; // if no entries exist, we don't need to update the villager data
+                return; // if no positive gossip exists, we don't need to update the villager data
 
             NBTCompound newGossipEntry = NBTEditor.getEmptyNBTCompound();
-            newGossipEntry.set(maxValue, "Value");
-            newGossipEntry.set(type, "Type");
             newGossipEntry.set(playerId, "Target");
+            newGossipEntry.set(type, "Type");
+            newGossipEntry.set(maxValue, "Value");
 
             // this function can be a little backwards to read
             // take our villager and save the new entry to Gossips[index]
-            NBTEditor.set(villagerEnt, newGossipEntry, "Gossips", playerIndex);
+            if (playerIndex >= 0) {
+                NBTEditor.set(entity, newGossipEntry, "Gossips", playerIndex);
+            } else {
+                NBTEditor.set(entity, newGossipEntry, "Gossips", NBTEditor.NEW_ELEMENT);
+            }
         }
     }
+
     // EVERYTHING BELOW IS FOR DEBUGGING
     // @EventHandler
     // public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
@@ -89,9 +97,9 @@ public class GossipHandler implements Listener {
     //     if (!(event.getDamager() instanceof Player))
     //         return;
 
-    //     Villager villagerEnt = (Villager) event.getEntity();
+    //     Villager entity = (Villager) event.getEntity();
     //     // check if the villager has a Gossips property to parse
-    //     if (!(NBTEditor.contains(villagerEnt, "Gossips", 0)))
+    //     if (!(NBTEditor.contains(entity, "Gossips", 0)))
     //         return;
     //     NBTCompound tag = NBTEditor.getEmptyNBTCompound();
     //     // int[] playerId = { -1848488881, -494907661, -1780731098, 665058548 };
@@ -100,9 +108,9 @@ public class GossipHandler implements Listener {
     //     tag.set("major_positive", "Type");
     //     tag.set(value, "Value");
     //     tag.set(new int[] { 1, 1, 1, 1 }, "Target");
-    //     NBTEditor.set(villagerEnt, tag, "Gossips", 0); // 0 means added to list at index 0
-    //     tag.set("minor_positive","Type");
-    //     NBTEditor.set(villagerEnt, tag, "Gossips", 0);
+    //     NBTEditor.set(entity, tag, "Gossips", 0); // 0 means added to list at index 0
+    //     tag.set("minor_positive", "Type");
+    //     NBTEditor.set(entity, tag, "Gossips", 0);
     // }
 
     // private void printVal(String key, String val) {
