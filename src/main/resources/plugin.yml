@@ -1,0 +1,15 @@
+name: ${name}
+version: ${version}
+description: ${description}
+author: ${author}
+website: ${url}
+
+main: ${mainClass}
+
+commands:
+    example:
+        description: An example command
+        permission: tradeshare.example
+        usage: /<command>
+
+permissions: {}

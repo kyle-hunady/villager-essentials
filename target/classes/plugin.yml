@@ -1,0 +1,15 @@
+name: VillagerEssentials
+version: 1.0-SNAPSHOT
+description: Edits to villagers and zomibes to make villager trading simpler in multiplayer Minecraft
+author: KHunady
+website: http://
+
+main: me.kylehunady.VillagerEssentials
+
+commands:
+    example:
+        description: An example command
+        permission: tradeshare.example
+        usage: /<command>
+
+permissions: {}
